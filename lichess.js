@@ -52,7 +52,7 @@ function findNewOpponent()
 	var i;
 	for (i = 0; i < buttons.length; i++)
 	{
-		if (buttons[i].outerHTML.includes("hook_like"))
+		if (buttons[i].outerHTML.includes("pool"))
 		{
 			buttons[i].click();
 			return true;
@@ -77,11 +77,9 @@ async function initialise()
 	// Wait for our first turn
 	while (!hasStarted)
 	{
-		var oReq = new XMLHttpRequest();
-		oReq.addEventListener("load", gameStartListener);
-		oReq.open("GET", window.location.toString());
-		oReq.send();
-		await sleep(500);
+		hasStarted = window.document.title.includes("Your turn");
+		console.log(hasStarted);
+		await sleep(1000);
 	}
 
 	startBot();
@@ -102,12 +100,6 @@ WebSocket.prototype.send = function(data)
      findNewOpponent();
 };
 
-// Check if game started
-function gameStartListener()
-{
-	hasStarted = this.responseText.includes("Your turn");
-}
-
 // Sending request to stockfish js
 function fenListener()
 {
@@ -118,7 +110,25 @@ function fenListener()
 	// Look at stockfish.js documentation to add more customisations to stockfish here
 	// I have limited the bots capabilities a lot (max depth 7)
 	stockfish.postMessage("position fen " + fen);
-	var depth = 2;
+
+	var depth;
+	var r = Math.random();
+	if (r > 0.80)
+	{
+		// 20% chance to possibly blunder
+		depth = 1;
+	}
+	else if (r > 0.2)
+	{
+		// 60% chance to look depth 2
+		depth = 2;
+	}
+	else
+	{
+		// 20% chance to look extra deep
+		depth = 7;
+	}
+
 	stockfish.postMessage("go depth " + depth);
 }
 
@@ -146,5 +156,6 @@ function updateGame()
 function startBot()
 {
 	lastPly = currentPly-2;
+	updateGame();
 }
 
