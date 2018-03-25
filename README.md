@@ -21,3 +21,9 @@ You can easily customise the stockfish engine in my code to perform however you 
 
 # Todo
 Use JS events to intercept updated DOM (to extract FEN board) instead of using XML GET requests for speed improvement.   May not be trivial since ```document``` itself does not seem to update although the user sees the change.
+
+Look into lichess anti cheat and bypass it using delays, inaccuracies and pre moves.
+
+Add opening book to engine
+
+Use findings to update lichess anti cheat om Git?
