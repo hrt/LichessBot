@@ -34,9 +34,8 @@
 	/******** Stockfish.js END (http://github.com/nmrugg/stockfish.js) ********/
 
 
-	var stockfish;
-
-	initialise();
+	var stockfish = STOCKFISH();
+	var score = 0;
 
 	function replaceAll(str, find, replace)
 	{
@@ -49,7 +48,7 @@
 		var i;
 		for (i = 0; i < buttons.length; i++)
 		{
-			if (buttons[i].outerHTML.includes("pool"))
+			if (buttons[i].outerHTML.includes("pool"))	// or pool
 			{
 				buttons[i].click();
 				return true;
@@ -63,69 +62,80 @@
 		return window.document.title.includes("Your turn");
 	}
 
-	async function initialise()
-	{
-		// Setting variables
-		stockfish = STOCKFISH();
-	}
-
-	// Intercept websockets to keep track of turns/ply
+	// Intercept websockets to keep track of game events (use it as a clock)
 	WebSocket.prototype.oldSend = WebSocket.prototype.send;
 	WebSocket.prototype.send = function(data)
 	{
-		WebSocket.prototype.oldSend.apply(this, [data]);
-		if (isMyTurn())
-		{
-			updateGame();
-		}
+		updateGame();
 		findNewOpponent();
+		WebSocket.prototype.oldSend.apply(this, [data]);
 	};
 
 	// Sending request to stockfish js
 	function fenListener()
 	{
+		if (!isMyTurn())
+		{
+			return;
+		}
+
 		// Extract FEN type of board reprsentation
 		var fensHtml = this.responseText.split("fen");
 		var fen = fensHtml[fensHtml.length - 1].split("\"}]")[0].substring(3);
 
 		// Look at stockfish.js documentation to add more customisations to stockfish here
-		// I have limited the bots capabilities a lot (max depth 7)
 		stockfish.postMessage("position fen " + fen);
 
-		var depth;
-		var r = Math.random();
-		if (r > 0.85)
-		{
-			// 15% chance to possibly blunder
-			depth = 1;
-		}
-		else if (r > 0.2)
-		{
-			// 75% chance to look depth 2
-			depth = 2;
-		}
-		else
-		{
-			// 20% chance to look extra deep
-			depth = 7;
-		}
+		var depth = 1;
 
+		if (typeof score != 'undefined' && score < -200)
+    	{
+    		depth = 7;
+    	}
+
+		stockfish.postMessage("setoption name Cowardice " + 20);
+		stockfish.postMessage("setoption name Aggressiveness " + 200);
+		stockfish.postMessage("setoption name Slow Mover " + 1000);
+		stockfish.postMessage("setoption name Minimum Thinking Time " + 1000);
+		stockfish.postMessage("setoption name Skill Level " + 13);
 		stockfish.postMessage("go depth " + depth);
 	}
 
+	function sleep(ms) {
+  		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+
 	// Response from stockfish js
-	stockfish.onmessage = function(event) {
+	stockfish.onmessage = async function(event) {
 	    if (event && event.includes("bestmove"))
 	    {
+			if (!isMyTurn())
+			{
+				return;
+			}
+
+			score = parseInt(event.split("score")[1].split("cp ")[1]);
 	    	var bestMove = replaceAll(event.split("bestmove")[1], " ", "");
+
+			if (typeof score != 'undefined' && (score < -200 || score > 200))
+			{
+		    	await sleep(Math.round(Math.random() * 3) * 1700);
+			}
+
 	    	// Send websocket move request to lichess server
-	    	lichess.socket.send("move",{"u":bestMove,"b":1});
+	    	lichess.socket.send("move",{"u":bestMove});
 	    }
 	};
 
 	// Refresh game state
 	function updateGame()
 	{
+		if (!isMyTurn())
+		{
+			return;
+		}
+
 		var oReq = new XMLHttpRequest();
 		oReq.addEventListener("load", fenListener);
 		oReq.open("GET", window.location.toString());
