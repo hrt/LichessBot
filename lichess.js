@@ -113,10 +113,17 @@
 			score = parseInt(event.split("score")[1].split("cp ")[1]);
 	    	var bestMove = replaceAll(event.split("bestmove")[1], " ", "");
 
-			if (typeof score != 'undefined' && Math.abs(score) < 200)
-			{
-		    	await sleep(Math.round(Math.random() * 3) * 1700);
-			}
+	    	if (typeof score != 'undefined')
+	    	{
+				if (Math.abs(score) < 200)
+				{
+			    	await sleep(Math.round(Math.random() * 3) * 1700);
+				}
+				else if (score < -600)
+				{
+					lichess.socket.send("resign");
+				}
+	    	}
 
 	    	// Send websocket move request to lichess server
 	    	lichess.socket.send("move",{"u":bestMove});

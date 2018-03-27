@@ -20,10 +20,10 @@ Optional : install tampermonkey and use this script directly to automatically in
 You can easily customise the stockfish engine in my code to perform however you want it to.
 
 # Todo
-Use JS events to intercept updated DOM (to extract FEN board) instead of using XML GET requests for speed improvement.   May not be trivial since ```document``` itself does not seem to update although the user sees the change.
+- [ ] Use JS events to intercept updated DOM (to extract FEN board) instead of using XML GET requests for speed improvement.   May not be trivial since ```document``` itself does not seem to update although the user sees the change.
 
-Look into lichess anti cheat and bypass it using delays, inaccuracies and pre moves.
+- [x] ~~Look into lichess anti cheat and bypass it using delays, inaccuracies and pre moves.~~ Bypasses anti-bot
 
-Add opening book to engine
+- [ ] ~~Add opening book to engine~~
 
-Use findings to update lichess anti cheat om Git?
+- [ ] Use findings to update lichess anti cheat on Git?
