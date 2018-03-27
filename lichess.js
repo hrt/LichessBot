@@ -86,18 +86,13 @@
 		// Look at stockfish.js documentation to add more customisations to stockfish here
 		stockfish.postMessage("position fen " + fen);
 
-		var depth = 1;
+		var depth = 7;
 
-		if (typeof score != 'undefined' && score < -200)
-    	{
-    		depth = 7;
-    	}
-
-		stockfish.postMessage("setoption name Cowardice " + 20);
+		stockfish.postMessage("setoption name Cowardice " + 0);
 		stockfish.postMessage("setoption name Aggressiveness " + 200);
 		stockfish.postMessage("setoption name Slow Mover " + 1000);
 		stockfish.postMessage("setoption name Minimum Thinking Time " + 1000);
-		stockfish.postMessage("setoption name Skill Level " + 13);
+		stockfish.postMessage("setoption name Skill Level " + 6);
 		stockfish.postMessage("go depth " + depth);
 	}
 
@@ -118,7 +113,7 @@
 			score = parseInt(event.split("score")[1].split("cp ")[1]);
 	    	var bestMove = replaceAll(event.split("bestmove")[1], " ", "");
 
-			if (typeof score != 'undefined' && (score < -200 || score > 200))
+			if (typeof score != 'undefined' && Math.abs(score) < 200)
 			{
 		    	await sleep(Math.round(Math.random() * 3) * 1700);
 			}
