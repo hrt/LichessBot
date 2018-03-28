@@ -118,11 +118,9 @@
 					lichess.socket.send("resign");
 				} else if (Math.abs(score) < 800)
 				{
-					if (Math.random() > 0.7)
+					if (Math.random() > 0.5)
 					{
-						var amount = Math.round(Math.random() * 2 + 1) * 4700;
-						console.log("Sleeping .. " + amount);
-				    	await sleep(amount);
+				    	await sleep(Math.round(Math.random() * 2 + 1) * 4700);
 					}
 				}
 	    	}
