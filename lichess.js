@@ -86,13 +86,11 @@
 		// Look at stockfish.js documentation to add more customisations to stockfish here
 		stockfish.postMessage("position fen " + fen);
 
-		var depth = 9;
+		var depth = 10;
 
 		stockfish.postMessage("setoption name Cowardice " + 0);
 		stockfish.postMessage("setoption name Aggressiveness " + 200);
-		stockfish.postMessage("setoption name Slow Mover " + 1000);
-		stockfish.postMessage("setoption name Minimum Thinking Time " + 1000);
-		stockfish.postMessage("setoption name Skill Level " + 14);
+		stockfish.postMessage("setoption name Skill Level " + 17);
 		stockfish.postMessage("go maxdepth " + depth);
 	}
 
@@ -115,13 +113,17 @@
 
 	    	if (typeof score != 'undefined')
 	    	{
-				if (Math.abs(score) < 200)
-				{
-			    	await sleep(Math.round(Math.random() * 3) * 1700);
-				}
-				else if (score < -600)
+	    		if (score < -600)
 				{
 					lichess.socket.send("resign");
+				} else if (Math.abs(score) < 800)
+				{
+					if (Math.random() > 0.7)
+					{
+						var amount = Math.round(Math.random() * 2 + 1) * 4700;
+						console.log("Sleeping .. " + amount);
+				    	await sleep(amount);
+					}
 				}
 	    	}
 
