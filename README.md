@@ -11,18 +11,18 @@ After the latest update it is fully automated (if you have tampermonkey).   Just
 
 
 # How to use
-Optional : install tampermonkey and use this script directly to automatically inject instead of manual copy pasting into console
 1. Get into a Lichess game
 2. Open console (usually F12)
 3. Copy paste ```lichess.js``` into the console.   NOTE: this part might take a few seconds to copy paste since the chess engine is in the code.
+Optional : install tampermonkey and use this script directly to automatically inject instead of manual copy pasting into console
 
 # Extra
-You can easily customise the stockfish engine in my code to perform however you want it to.
+You can easily customise the stockfish engine in my code to perform however you want it to (e.g. set mindepth or skill level parameters to increase/decrease elo.
 
 # Todo
-- [ ] Use JS events to intercept updated DOM (to extract FEN board) instead of using XML GET requests for speed improvement.   May not be trivial since ```document``` itself does not seem to update although the user sees the change.
+- [ ] Intercept Websocket receive events to capture FEN instead of using XML HTTP requests to stop refreshing of page to allow for consistent ultra bullet play.   Also update to have larger random (not so often) spikes of delays if this update is applied.
 
-- [x] ~~Look into lichess anti cheat and bypass it using delays, inaccuracies and pre moves.~~ Bypasses anti-bot
+- [x] Bypasses anti-bot
 
 - [ ] ~~Add opening book to engine~~
 
