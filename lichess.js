@@ -86,14 +86,14 @@
 		// Look at stockfish.js documentation to add more customisations to stockfish here
 		stockfish.postMessage("position fen " + fen);
 
-		var depth = 7;
+		var depth = 9;
 
 		stockfish.postMessage("setoption name Cowardice " + 0);
 		stockfish.postMessage("setoption name Aggressiveness " + 200);
 		stockfish.postMessage("setoption name Slow Mover " + 1000);
 		stockfish.postMessage("setoption name Minimum Thinking Time " + 1000);
-		stockfish.postMessage("setoption name Skill Level " + 6);
-		stockfish.postMessage("go depth " + depth);
+		stockfish.postMessage("setoption name Skill Level " + 14);
+		stockfish.postMessage("go maxdepth " + depth);
 	}
 
 	function sleep(ms) {
