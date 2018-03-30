@@ -132,14 +132,15 @@
 
 
     // Send request to stockfish
+    var maxdepth = Math.round(Math.random()) + 2;	// between 2 and 3
     function makeMove()
     {
-		// Look at stockfish.js documentation to add more customisations to stockfish here
+		// Look at stockfish.js documentation to add more nerfs / customisations to stockfish here
 		stockfish.postMessage("position fen " + fen);
 		stockfish.postMessage("setoption name Cowardice " + 0);
 		stockfish.postMessage("setoption name Aggressiveness " + 200);
 		stockfish.postMessage("setoption name Skill Level " + 1);
-		stockfish.postMessage("go maxdepth " + 3);	// stockfish response will trigger a move
+		stockfish.postMessage("go maxdepth " + maxdepth);	// stockfish response will trigger a move
     }
 
 	function sleep(ms)
@@ -158,15 +159,16 @@
 
 	    	if (typeof newScore != 'undefined')
 	    	{
-	    		// If we see a centipawn difference then pretend to think, if we see no difference pre-move
+	    		if (newScore < -100 || newScore == score)
+	    		{
+	    			// Tell server we are premoving
+	    			moveTime = "0";
+	    		}
 	    		if (Math.abs(newScore - score) > 100)
 	    		{
+	    			// If we see a centipawn difference then pretend to think
 	    			moveTime = "y";
 	    			await sleep(1300);
-	    		}
-	    		else if (newScore == score)
-	    		{
-	    			moveTime = "0";
 	    		}
 
 	    		// auto resign - not needed for ultra bullet
