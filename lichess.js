@@ -1,11 +1,9 @@
 	// ==UserScript==
-	// @name         New Userscript
-	// @namespace    http://tampermonkey.net/
-	// @version      0.1
-	// @description  try to take over the world!
+	// @name         Lichess Bot
+	// @description  Fully automated lichess bot
 	// @author       You
 	// @include      *lichess*
-	// @match        http://tampermonkey.net/index.php?version=4.6.5709&ext=fire&updated=true
+	// @run-at document-start
 	// @grant        none
 	// ==/UserScript==
 
@@ -36,6 +34,30 @@
 
 	var stockfish = STOCKFISH();
 	var score = 0;
+	var isWhite = false;
+	var fen = "";
+	var gameStarted = false;
+
+	initialise();
+
+	async function initialise()
+	{
+		while (!gameStarted || typeof lichess.socket == 'undefined')
+		{
+	    	await sleep(1000);
+	    	// Get color information and initial FEN from html
+	    	var documentPlayerString = document.documentElement.innerHTML.split("player\":{\"color\":\"")[1].split("\"")[0];
+	    	gameStarted = documentPlayerString == "white" || documentPlayerString == "black";
+	    	isWhite = documentPlayerString == "white";
+		}
+
+		getInitialFen();
+		
+	    if (isMyTurn())
+		{
+			makeMove();
+		}
+	}
 
 	function replaceAll(str, find, replace)
 	{
@@ -48,7 +70,7 @@
 		var i;
 		for (i = 0; i < buttons.length; i++)
 		{
-			if (buttons[i].outerHTML.includes("pool"))	// or pool
+			if (buttons[i].outerHTML.includes("hook"))	// hook or pool
 			{
 				buttons[i].click();
 				return true;
@@ -59,87 +81,111 @@
 
 	function isMyTurn()
 	{
-		return window.document.title.includes("Your turn");
+		return (isWhite && fen.includes(" w")) || (!isWhite && fen.includes(" b"));
 	}
 
-	// Intercept websockets to keep track of game events (use it as a clock)
-	WebSocket.prototype.oldSend = WebSocket.prototype.send;
-	WebSocket.prototype.send = function(data)
+    // Extract FEN from html
+	function getInitialFen()
 	{
-		updateGame();
-		findNewOpponent();
-		WebSocket.prototype.oldSend.apply(this, [data]);
-	};
+	    var fensHtml = document.documentElement.innerHTML.split("fen");
+	    fen = fensHtml[fensHtml.length - 1].split("\"}]")[0].substring(3).split("\"")[0];
+	}
 
-	// Sending request to stockfish js
-	function fenListener()
-	{
-		if (!isMyTurn())
-		{
-			return;
-		}
+	// Intercept inputs from websockets
+    var ws = window.WebSocket;
+    window.WebSocket = function (a, b)
+    {
+        var that = b ? new ws(a, b) : new ws(a);
 
-		// Extract FEN type of board reprsentation
-		var fensHtml = this.responseText.split("fen");
-		var fen = fensHtml[fensHtml.length - 1].split("\"}]")[0].substring(3);
+        that.addEventListener("message", function (e)
+	    {
+	    	// If game is over then search for new game
+	        findNewOpponent();
 
+	        var message = JSON.parse(e.data);
+	        if (typeof message.d != 'undefined' && typeof message.v != 'undefined' && typeof message.d.fen != 'undefined')
+	        {
+	            // Note : this fen is not complete, it only contains the first field
+	            fen = message.d.fen;
+
+	            // add player to move to fen
+	            var isWhitesTurn = message.v % 2 == 0;
+	            if (isWhitesTurn)
+	            {
+	                fen += " w";
+	            }
+	            else
+	            {
+	                fen += " b";
+	            }
+	            if (isMyTurn())
+	            {
+	            	makeMove();
+	            }
+	            return;
+	        }
+
+        });
+        return that;
+    };
+    window.WebSocket.prototype = ws.prototype;
+
+
+    // Send request to stockfish
+    function makeMove()
+    {
 		// Look at stockfish.js documentation to add more customisations to stockfish here
 		stockfish.postMessage("position fen " + fen);
-
-		var depth = 10;
-
 		stockfish.postMessage("setoption name Cowardice " + 0);
 		stockfish.postMessage("setoption name Aggressiveness " + 200);
-		stockfish.postMessage("setoption name Skill Level " + 17);
-		stockfish.postMessage("go maxdepth " + depth);
+		stockfish.postMessage("setoption name Skill Level " + 1);
+		stockfish.postMessage("go maxdepth " + 3);	// stockfish response will trigger a move
+    }
+
+	function sleep(ms)
+	{
+	  return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
-	function sleep(ms) {
-  		return new Promise(resolve => setTimeout(resolve, ms));
-	}
 
-
-	// Response from stockfish js
+	// Response from stockfish js -> move
 	stockfish.onmessage = async function(event) {
 	    if (event && event.includes("bestmove"))
 	    {
-			if (!isMyTurn())
-			{
-				return;
-			}
-
-			score = parseInt(event.split("score")[1].split("cp ")[1]);
+			var newScore = parseInt(event.split("score")[1].split("cp ")[1]);
 	    	var bestMove = replaceAll(event.split("bestmove")[1], " ", "");
+	    	var moveTime = "y";		// set moveTime = "0" for pre-move abuse!
 
-	    	if (typeof score != 'undefined')
+	    	if (typeof newScore != 'undefined')
 	    	{
-	    		if (score < -600)
-				{
-					lichess.socket.send("resign");
-				} else if (Math.abs(score) < 800)
-				{
-					if (Math.random() > 0.5)
-					{
-				    	await sleep(Math.round(Math.random() * 2 + 1) * 4700);
-					}
-				}
+	    		// If we see a centipawn difference then pretend to think, if we see no difference pre-move
+	    		if (Math.abs(newScore - score) > 100)
+	    		{
+	    			moveTime = "y";
+	    			await sleep(1300);
+	    		}
+	    		else if (newScore == score)
+	    		{
+	    			moveTime = "0";
+	    		}
+
+	    		// auto resign - not needed for ultra bullet
+	   			// if (newScore < -600)
+				// {
+				// 	lichess.socket.send("resign");
+				// }
 	    	}
 
+	    	score = newScore;
+
 	    	// Send websocket move request to lichess server
-	    	lichess.socket.send("move",{"u":bestMove});
+	    	lichess.socket.send("move",{"u":bestMove,"s":moveTime});
 	    }
 	};
 
-	// Refresh game state
-	function updateGame()
-	{
-		if (!isMyTurn())
-		{
-			return;
-		}
-
-		var oReq = new XMLHttpRequest();
-		oReq.addEventListener("load", fenListener);
-		oReq.open("GET", window.location.toString());
-		oReq.send();
-	}
+    WebSocket.prototype.send = function (send) {
+        return function (data) {
+            console.log("S : " + data);
+            return send.apply(this, arguments);
+        };
+    }(WebSocket.prototype.send);
