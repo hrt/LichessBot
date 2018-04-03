@@ -23,7 +23,7 @@ You can easily customise the stockfish engine in my code to perform however you 
 - [X] Play Ultra Bullet. EXTRA : Abuse pre-move implementation to make server think we are taking 0s when we're not
 - [X] Intercept Websocket receive events to capture FEN instead of using XML HTTP requests to stop refreshing of page to allow for consistent ultra bullet play.   Also update to have larger random (not so often) spikes of delays if this update is applied.
 
-- [X] Bypasses anti-bot.   If you look at the source of Lichess you will notice that if you account for "inconsistent move times", "low accuracy", "no fast moves" and "don't always have advantage" you can evade all automated bot checks as long as you are not ban evading which is checked by IP, user agent and fingerprint
+- [X] Bypasses anti-bot (Not on ultra bullet).   If you look at the source of Lichess you will notice that if you account for "inconsistent move times", "low accuracy", "no fast moves" and "don't always have advantage" you can evade all automated bot checks as long as you are not ban evading which is checked by IP, user agent and fingerprint
 
 - [ ] ~~Add opening book to engine~~
 
