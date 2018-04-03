@@ -5,7 +5,7 @@ Using Javascript you can utilise the open source chess engine stockfish https://
 Although I hope no one will actually use this against real players since it does ruin the game for everyone and you gain nothing from it.   
 The only reason I started writing this was as procrastination for the advanced architecture exam I have in an hour today as well as because all the attempts that I saw on the internet achieve a lot less than this whilst using hundreds of more lines of code and silly dependencies! (You only need pure javascript).
 
-[![demo](https://img.youtube.com/vi/6XTYFbyaXzE/0.jpg)](https://www.youtube.com/watch?v=6XTYFbyaXzE)
+[![demo](https://img.youtube.com/vi/MaQtq-yYvNE/0.jpg)](https://www.youtube.com/watch?v=MaQtq-yYvNE)
 
 After the latest update it is fully automated (if you have tampermonkey).   Just give it a starting game and it will automatically start playing and find opponents after game end. 
 
