@@ -14,7 +14,7 @@ After the latest update it is fully automated (if you have tampermonkey).   Just
 1. Get into a Lichess game
 2. Open console (usually F12)
 3. Copy paste ```lichess.js``` into the console.   NOTE: this part might take a few seconds to copy paste since the chess engine is in the code.
-Optional : install tampermonkey and use this script directly to automatically inject instead of manual copy pasting into console
+Note : The above is outdated - install tampermonkey and use this script directly to automatically inject instead of manual copy pasting into console
 
 # Extra
 You can easily customise the stockfish engine in my code to perform however you want it to (e.g. set mindepth or skill level parameters to increase/decrease elo.
